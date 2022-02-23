@@ -1,6 +1,6 @@
 import numpy as np
 from network import NeuralNetwork
-from dense import Dense
+from layers.dense import Dense
 from math import pi
 
 def f(x):
