@@ -3,10 +3,9 @@ from matplotlib import pyplot as plt
 
 
 class NeuralNetwork(object):
-    def __init__(self, layers: list, learning_rate: float, modifier: float = 1.0):
+    def __init__(self, layers: list, learning_rate: float):
         self.layers = layers
         self.learning_rate = learning_rate
-        self.modifier = modifier
         
     @staticmethod
     def l2loss(predicted, targets, deriv=False):
@@ -21,7 +20,7 @@ class NeuralNetwork(object):
         for layer in self.layers:
             value = layer.forward(value)
             
-        return value * self.modifier
+        return value
     
     def validate(self, predictions, targets, verbose=True):
         """Validate predicted against targets"""
@@ -63,7 +62,7 @@ class NeuralNetwork(object):
         test_y = targets[training_count:]
 
         before_training = self.measure_error(test_x, test_y)
-        print('MSE before training:', before_training)
+        print(f'MSE before training: {before_training:.5f}')
 
         epochs_mse_change = []
 
@@ -77,7 +76,7 @@ class NeuralNetwork(object):
             print(f'MSE: {mse:.5f}', end='\r')
 
         after_training = self.measure_error(test_x, test_y)
-        print(f'MSE after training: {after_training}')
+        print(f'MSE after training: {after_training:.5f}')
         increase = (before_training-after_training)*100/before_training
         print(f'Performance: {abs(increase):.3f}% {"better" if increase > 0 else "worse"}')
 
@@ -88,10 +87,12 @@ class NeuralNetwork(object):
         ax2.set_title(f'Predicted values for testing')
 
         ax3.plot(epochs_mse_change)
-        ax3.set_title(f'MSE change across epochs (LR {self.learning_rate})')
-
-        ax4.plot(train_x, train_y, c='r', label='correct')
-        ax4.plot(train_x, self.predict(train_x), c='b', label='predicted')
-        ax4.set_title('Comparison')
+        ax3.set_title(f'MSE change across epochs (LR {self.learning_rate}). Overall increase: {increase:.5f}%')
+        
+        ax4.set_ymargin(2.5)
+        ax4.plot(test_x, test_y, c='g', label='correct')
+        predictions = self.predict(test_x)
+        ax4.plot(test_x, predictions, c='r', label='predicted', scalex=False, scaley=False)
+        ax4.set_title(f'Comparison (Avg diff {abs(predictions.mean() - test_y.mean()):5f}, MSE {after_training:.5f})')
         ax4.legend()
         plt.show()
