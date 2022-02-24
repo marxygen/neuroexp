@@ -4,12 +4,12 @@ from utils.imports import import_function
 
 
 class NeuralNetwork(object):
-    def __init__(self, layers: list, learning_rate: float, loss="l2loss"):
+    def __init__(self, layers: list, optimizer, loss="l2loss"):
         self.values = None
         self.targets = None
         self.layers = layers
-        self.learning_rate = learning_rate
         self.loss = loss if callable(loss) else import_function(loss, "losses")
+        self.optimizer = optimizer
 
     def predict(self, inputs: np.array):
         """Predict the outputs for given inputs"""
@@ -47,7 +47,7 @@ class NeuralNetwork(object):
         self.layers[-1].backward(
             dvalues=loss_deriv,
             next_layers=self.layers[:-1][::-1],
-            learning_rate=self.learning_rate,
+            optimizer=self.optimizer,
         )
 
     def measure_error(self, sample: np.array, targets: np.array):

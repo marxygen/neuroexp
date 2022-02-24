@@ -3,6 +3,7 @@ from network import NeuralNetwork
 from layers.dense import Dense
 from activations import sigmoid, relu
 from losses import l2loss
+from optimizers import SGD
 
 
 def f(x):
@@ -24,8 +25,8 @@ network = NeuralNetwork(
         Dense(neurons=4, inputs=4, activation=sigmoid),
         Dense(neurons=1, inputs=4, activation=relu)
     ],
-    learning_rate=0.7,
-    loss=l2loss
+    loss=l2loss,
+    optimizer=SGD(learning_rate=0.7)
 )
 
 network.fit(inputs,
