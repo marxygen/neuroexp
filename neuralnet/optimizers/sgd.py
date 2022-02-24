@@ -47,9 +47,4 @@ class SGD:
         weights -= weight_updates
         biases -= (learning_rate * dbiases).T
 
-        # weights -= (learning_rate * dweights).T
-        # biases -= (learning_rate * dbiases).T
-        #
-        # self.weight_momentums = weight_updates
-
         return weights, biases, weight_updates
