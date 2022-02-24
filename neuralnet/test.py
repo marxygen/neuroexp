@@ -27,10 +27,10 @@ network = NeuralNetwork(
         Dense(neurons=1, inputs=4, activation=relu)
     ],
     loss=l2loss,
-    optimizer=SGD(learning_rate=0.7)
+    optimizer=SGD(learning_rate=0.7, lr_decay_rate=0.05, decay_basis='epoch')
 )
 
 network.fit(inputs,
             targets,
             validation_split=0.20,
-            epochs=500)
+            epochs=100)

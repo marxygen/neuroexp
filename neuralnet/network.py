@@ -1,11 +1,17 @@
 """Neural Network implementation"""
 import numpy as np
+from typing import List, Callable
 from matplotlib import pyplot as plt
 from utils.imports import import_function
 
 
 class NeuralNetwork:
     """Neural Network class"""
+    values: np.array
+    targets: np.array
+    layers: List['Layer']
+    loss: Callable
+    optimizer: 'Optimizer'
 
     def __init__(self, layers: list, optimizer, loss="l2loss"):
         """Initialize the neural network with layers as a list of instances"""
@@ -41,7 +47,7 @@ class NeuralNetwork:
         if verbose:
             print(f"Loss: {loss:.5f}")
 
-    def backward(self):
+    def backward(self, epoch=None, batch=None):
         """Perform backward pass"""
         # Loss derivative shows how much each neuron affect the function across samples
         # So, the dimensions of the loss_deriv must be neurons x samples
@@ -52,6 +58,8 @@ class NeuralNetwork:
             dvalues=loss_deriv,
             next_layers=self.layers[:-1][::-1],
             optimizer=self.optimizer,
+            epoch=epoch,
+            batch=batch
         )
 
     def measure_error(self, sample: np.array, targets: np.array):
@@ -74,15 +82,14 @@ class NeuralNetwork:
         epochs_loss_change = []
 
         for epoch in range(epochs):
-            print(f"Epoch {epoch},", end=" ")
-            for t_x, t_y in zip(
+            for batch, (t_x, t_y) in enumerate(zip(
                 np.array_split(train_x, 1000), np.array_split(train_y, 1000)
-            ):
+            )):
                 self.forward(t_x, t_y, verbose=False)
-                self.backward()
-                loss = self.measure_error(self.predict(t_x), t_y)
-                epochs_loss_change.append(loss)
-                print(f"Loss: {loss:.5f}", end="\r")
+                self.backward(epoch=epoch, batch=batch)
+            loss = self.measure_error(self.predict(test_x), test_y)
+            epochs_loss_change.append(loss)
+            print(f"Epoch {epoch}, Loss: {loss:.5f}", end="\r")
 
         after_training = self.measure_error(test_x, test_y)
         print(f"Loss after training: {after_training:.5f}")

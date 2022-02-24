@@ -5,6 +5,7 @@ from utils.imports import import_function
 
 class Dense:
     """Dense layer"""
+
     def __init__(self, *, neurons: int, inputs: int, activation="sigmoid"):
         """Instantiate a new Dense layer"""
         self.inputs = None
@@ -27,7 +28,13 @@ class Dense:
         self.outputs = self.activation(x=self.values)
         return self.outputs
 
-    def backward(self, dvalues, next_layers: list, optimizer) -> None:
+    def backward(
+            self,
+            dvalues,
+            next_layers: list,
+            optimizer,
+            epoch=None,
+            batch=None) -> None:
         """Perform backward pass"""
         # We received dvalues - its dimensions are neurons x samples
         # Now we have to calculate the derivative of activation function
@@ -43,7 +50,8 @@ class Dense:
         dbiases = dact.sum(axis=1, keepdims=True)
 
         self.weights, self.biases = optimizer.apply(
-            weights=self.weights, dweights=dweights, biases=self.biases, dbiases=dbiases
+            weights=self.weights, dweights=dweights, biases=self.biases, dbiases=dbiases,
+            epoch=epoch, batch=batch
         )
 
         if next_layers:
