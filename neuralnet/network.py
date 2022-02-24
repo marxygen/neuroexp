@@ -1,10 +1,14 @@
+"""Neural Network implementation"""
 import numpy as np
 from matplotlib import pyplot as plt
 from utils.imports import import_function
 
 
-class NeuralNetwork(object):
+class NeuralNetwork:
+    """Neural Network class"""
+
     def __init__(self, layers: list, optimizer, loss="l2loss"):
+        """Initialize the neural network with layers as a list of instances"""
         self.values = None
         self.targets = None
         self.layers = layers
@@ -35,7 +39,7 @@ class NeuralNetwork(object):
         loss = self.validate(self.values, targets, verbose)
 
         if verbose:
-            print(f'Loss: {loss:.5f}')
+            print(f"Loss: {loss:.5f}")
 
     def backward(self):
         """Perform backward pass"""
@@ -51,6 +55,7 @@ class NeuralNetwork(object):
         )
 
     def measure_error(self, sample: np.array, targets: np.array):
+        """Measure and return the error"""
         return self.validate(self.predict(sample), targets, verbose=False).mean()
 
     def fit(self, inputs, targets, validation_split=0.1, epochs=100):
@@ -75,9 +80,9 @@ class NeuralNetwork(object):
             ):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward()
-            loss = self.measure_error(self.predict(t_x), t_y)
-            epochs_loss_change.append(loss)
-            print(f"Loss: {loss:.5f}", end="\r")
+                loss = self.measure_error(self.predict(t_x), t_y)
+                epochs_loss_change.append(loss)
+                print(f"Loss: {loss:.5f}", end="\r")
 
         after_training = self.measure_error(test_x, test_y)
         print(f"Loss after training: {after_training:.5f}")
@@ -88,13 +93,13 @@ class NeuralNetwork(object):
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
         ax1.plot(test_x, test_y)
-        ax1.set_title(f"Correct values for testing")
+        ax1.set_title("Correct values for testing")
         ax2.plot(test_x, self.predict(test_x))
-        ax2.set_title(f"Predicted values for testing")
+        ax2.set_title("Predicted values for testing")
 
         ax3.plot(epochs_loss_change)
         ax3.set_title(
-            f"Loss change across epochs (LR {self.learning_rate}). Overall increase: {increase:.5f}%"
+            f"Loss change across epochs (LR {self.optimizer.learning_rate}). Overall increase: {increase:.5f}%"
         )
 
         ax4.set_ymargin(2.5)

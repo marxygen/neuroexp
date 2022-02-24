@@ -1,8 +1,9 @@
-import numpy as np
+"""SGD implementation"""
 from typing import Tuple
+import numpy as np
 
 
-class SGD(object):
+class SGD:
     """Stochastic gradient descent optimizer"""
 
     def __init__(self, learning_rate: float):

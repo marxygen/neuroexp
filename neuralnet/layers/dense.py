@@ -1,9 +1,12 @@
+"""Dense layer"""
 import numpy as np
 from utils.imports import import_function
 
 
-class Dense(object):
+class Dense:
+    """Dense layer"""
     def __init__(self, *, neurons: int, inputs: int, activation="sigmoid"):
+        """Instantiate a new Dense layer"""
         self.inputs = None
         self.values = None
         self.outputs = None
@@ -17,13 +20,15 @@ class Dense(object):
             else import_function(activation, "activations")
         )
 
-    def forward(self, inputs):
+    def forward(self, inputs) -> np.array:
+        """Perform forward pass"""
         self.inputs = inputs
         self.values = inputs @ self.weights + self.biases
         self.outputs = self.activation(x=self.values)
         return self.outputs
 
-    def backward(self, dvalues, next_layers: list, optimizer):
+    def backward(self, dvalues, next_layers: list, optimizer) -> None:
+        """Perform backward pass"""
         # We received dvalues - its dimensions are neurons x samples
         # Now we have to calculate the derivative of activation function
         # Its dimensions are neurons x samples

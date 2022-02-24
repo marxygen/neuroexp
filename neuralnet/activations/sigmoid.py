@@ -1,3 +1,4 @@
+"""Sigmoid activation function implementation"""
 import numpy as np
 
 
