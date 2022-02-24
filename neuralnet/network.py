@@ -64,9 +64,18 @@ class NeuralNetwork:
 
     def measure_error(self, sample: np.array, targets: np.array):
         """Measure and return the error"""
-        return self.validate(self.predict(sample), targets, verbose=False).mean()
+        return self.validate(
+            self.predict(sample),
+            targets,
+            verbose=False).mean()
 
-    def fit(self, inputs, targets, validation_split=0.1, epochs=100):
+    def fit(
+            self,
+            inputs,
+            targets,
+            validation_split=0.1,
+            epochs=100,
+            batch_size=1000):
         """Display report based on performance of the network"""
 
         training_count = int(len(inputs) * (1 - validation_split))
@@ -82,9 +91,8 @@ class NeuralNetwork:
         epochs_loss_change = []
 
         for epoch in range(epochs):
-            for batch, (t_x, t_y) in enumerate(zip(
-                np.array_split(train_x, 1000), np.array_split(train_y, 1000)
-            )):
+            for batch, (t_x, t_y) in enumerate(zip(np.array_split(
+                    train_x, batch_size), np.array_split(train_y, batch_size))):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward(epoch=epoch, batch=batch)
             loss = self.measure_error(self.predict(test_x), test_y)
@@ -113,8 +121,12 @@ class NeuralNetwork:
         ax4.plot(test_x, test_y, c="g", label="correct")
         predictions = self.predict(test_x)
         ax4.plot(
-            test_x, predictions, c="r", label="predicted", scalex=False, scaley=False
-        )
+            test_x,
+            predictions,
+            c="r",
+            label="predicted",
+            scalex=False,
+            scaley=False)
         ax4.set_title(
             f"Comparison (Avg diff {abs(predictions.mean() - test_y.mean()):5f}, Loss {after_training:.5f})"
         )
