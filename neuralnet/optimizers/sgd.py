@@ -41,7 +41,8 @@ class SGD:
                             1) * self.lr_decay_rate) if self.lr_decay_rate else self.learning_rate
 
         weight_momentums = kwargs.pop('weight_momentums')
-        weight_updates = self.momentum * weight_momentums - (self.learning_rate * dweights).T
+        weight_updates = self.momentum * weight_momentums - \
+            (self.learning_rate * dweights).T
 
         weights -= weight_updates
         biases -= (learning_rate * dbiases).T
