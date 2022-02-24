@@ -1,10 +1,12 @@
 import numpy as np
 from network import NeuralNetwork
 from layers.dense import Dense
-from math import pi
+from activations import sigmoid, relu
+
 
 def f(x):
     return x * 2 - 3
+
 
 inputs = np.array(np.linspace(-10000, 10000, 10000)) / 10000
 inputs = inputs.reshape(len(inputs), 1)
@@ -16,11 +18,12 @@ print()
 
 network = NeuralNetwork(
     layers=[
-        Dense(neurons=1, inputs=1),
-        Dense(neurons=1, inputs=1),
-        Dense(neurons=1, inputs=1)
+        Dense(neurons=1, inputs=1, activation=sigmoid),
+        Dense(neurons=4, inputs=1, activation=sigmoid),
+        Dense(neurons=4, inputs=4, activation=sigmoid),
+        Dense(neurons=1, inputs=4, activation=relu)
     ],
-    learning_rate = 0.7
+    learning_rate=0.7
 )
 
 network.fit(inputs,
