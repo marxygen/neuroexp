@@ -15,6 +15,7 @@ class Dense:
         self.inputs_num = inputs
         self.weights = np.random.randn(inputs, neurons)
         self.biases = np.random.randn(1, neurons)
+        self.weight_momentums = np.zeros((inputs, neurons))
         self.activation = (
             activation
             if callable(activation)
@@ -49,9 +50,10 @@ class Dense:
         dweights = np.dot(dact, self.inputs)
         dbiases = dact.sum(axis=1, keepdims=True)
 
-        self.weights, self.biases = optimizer.apply(
+        self.weights, self.biases, self.weight_momentums = optimizer.apply(
             weights=self.weights, dweights=dweights, biases=self.biases, dbiases=dbiases,
-            epoch=epoch, batch=batch
+            epoch=epoch, batch=batch,
+            weight_momentums=self.weight_momentums
         )
 
         if next_layers:
