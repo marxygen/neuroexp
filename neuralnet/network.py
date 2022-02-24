@@ -1,17 +1,15 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from utils.imports import import_function
 
 
 class NeuralNetwork(object):
-    def __init__(self, layers: list, learning_rate: float):
+    def __init__(self, layers: list, learning_rate: float, loss="l2loss"):
+        self.values = None
+        self.targets = None
         self.layers = layers
         self.learning_rate = learning_rate
-
-    @staticmethod
-    def l2loss(predicted, targets, deriv=False):
-        if deriv:
-            return -2 * predicted * (targets - predicted)
-        return np.square(targets - predicted)
+        self.loss = loss if callable(loss) else import_function(loss, "losses")
 
     def predict(self, inputs: np.array):
         """Predict the outputs for given inputs"""
@@ -24,9 +22,9 @@ class NeuralNetwork(object):
 
     def validate(self, predictions, targets, verbose=True):
         """Validate predicted against targets"""
-        loss = self.l2loss(predictions, targets)
+        loss = self.loss(predictions, targets)
         if verbose:
-            print(f'MSE: {loss:.5f}')
+            print(f"Loss: {loss:.5f}")
         return loss
 
     def forward(self, inputs, targets, verbose=True):
@@ -36,20 +34,24 @@ class NeuralNetwork(object):
 
         loss = self.validate(self.values, targets, verbose)
 
+        if verbose:
+            print(f'Loss: {loss:.5f}')
+
     def backward(self):
         """Perform backward pass"""
         # Loss derivative shows how much each neuron affect the function across samples
         # So, the dimensions of the loss_deriv must be neurons x samples
-        loss_deriv = self.l2loss(self.values, self.targets, deriv=True).T  # neurons x samples
-        self.layers[-1].backward(dvalues=loss_deriv,
-                                 next_layers=self.layers[:-1][::-1],
-                                 learning_rate=self.learning_rate)
+        loss_deriv = self.loss(
+            self.values, self.targets, deriv=True
+        ).T  # neurons x samples
+        self.layers[-1].backward(
+            dvalues=loss_deriv,
+            next_layers=self.layers[:-1][::-1],
+            learning_rate=self.learning_rate,
+        )
 
     def measure_error(self, sample: np.array, targets: np.array):
-        return self.validate(
-            self.predict(sample),
-            targets,
-            verbose=False).mean()
+        return self.validate(self.predict(sample), targets, verbose=False).mean()
 
     def fit(self, inputs, targets, validation_split=0.1, epochs=100):
         """Display report based on performance of the network"""
@@ -62,37 +64,47 @@ class NeuralNetwork(object):
         test_y = targets[training_count:]
 
         before_training = self.measure_error(test_x, test_y)
-        print(f'MSE before training: {before_training:.5f}')
+        print(f"Loss before training: {before_training:.5f}")
 
-        epochs_mse_change = []
+        epochs_loss_change = []
 
         for epoch in range(epochs):
-            print(f'Epoch {epoch},', end=' ')
-            for t_x, t_y in zip(np.array_split(train_x, 1000), np.array_split(train_y, 1000)):
+            print(f"Epoch {epoch},", end=" ")
+            for t_x, t_y in zip(
+                np.array_split(train_x, 1000), np.array_split(train_y, 1000)
+            ):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward()
-            mse = self.measure_error(self.predict(t_x), t_y)
-            epochs_mse_change.append(mse)
-            print(f'MSE: {mse:.5f}', end='\r')
+            loss = self.measure_error(self.predict(t_x), t_y)
+            epochs_loss_change.append(loss)
+            print(f"Loss: {loss:.5f}", end="\r")
 
         after_training = self.measure_error(test_x, test_y)
-        print(f'MSE after training: {after_training:.5f}')
+        print(f"Loss after training: {after_training:.5f}")
         increase = (before_training - after_training) * 100 / before_training
-        print(f'Performance: {abs(increase):.3f}% {"better" if increase > 0 else "worse"}')
+        print(
+            f'Performance: {abs(increase):.3f}% {"better" if increase > 0 else "worse"}'
+        )
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
         ax1.plot(test_x, test_y)
-        ax1.set_title(f'Correct values for testing')
+        ax1.set_title(f"Correct values for testing")
         ax2.plot(test_x, self.predict(test_x))
-        ax2.set_title(f'Predicted values for testing')
+        ax2.set_title(f"Predicted values for testing")
 
-        ax3.plot(epochs_mse_change)
-        ax3.set_title(f'MSE change across epochs (LR {self.learning_rate}). Overall increase: {increase:.5f}%')
+        ax3.plot(epochs_loss_change)
+        ax3.set_title(
+            f"Loss change across epochs (LR {self.learning_rate}). Overall increase: {increase:.5f}%"
+        )
 
         ax4.set_ymargin(2.5)
-        ax4.plot(test_x, test_y, c='g', label='correct')
+        ax4.plot(test_x, test_y, c="g", label="correct")
         predictions = self.predict(test_x)
-        ax4.plot(test_x, predictions, c='r', label='predicted', scalex=False, scaley=False)
-        ax4.set_title(f'Comparison (Avg diff {abs(predictions.mean() - test_y.mean()):5f}, MSE {after_training:.5f})')
+        ax4.plot(
+            test_x, predictions, c="r", label="predicted", scalex=False, scaley=False
+        )
+        ax4.set_title(
+            f"Comparison (Avg diff {abs(predictions.mean() - test_y.mean()):5f}, Loss {after_training:.5f})"
+        )
         ax4.legend()
         plt.show()

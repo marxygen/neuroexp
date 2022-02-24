@@ -2,6 +2,7 @@ import numpy as np
 from network import NeuralNetwork
 from layers.dense import Dense
 from activations import sigmoid, relu
+from losses import l2loss
 
 
 def f(x):
@@ -23,7 +24,8 @@ network = NeuralNetwork(
         Dense(neurons=4, inputs=4, activation=sigmoid),
         Dense(neurons=1, inputs=4, activation=relu)
     ],
-    learning_rate=0.7
+    learning_rate=0.7,
+    loss=l2loss
 )
 
 network.fit(inputs,
