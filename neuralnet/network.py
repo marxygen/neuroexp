@@ -79,56 +79,66 @@ class NeuralNetwork:
         """Display report based on performance of the network"""
 
         training_count = int(len(inputs) * (1 - validation_split))
-        train_x = inputs[:training_count]
-        train_y = targets[:training_count]
+        self.train_x = inputs[:training_count]
+        self.train_y = targets[:training_count]
 
-        test_x = inputs[training_count:]
-        test_y = targets[training_count:]
+        self.test_x = inputs[training_count:]
+        self.test_y = targets[training_count:]
 
-        before_training = self.measure_error(test_x, test_y)
+        print('[Inputs]')
+        print(f'\tMean: {inputs.mean():.5f}')
+        print(f'\tMin: {inputs.mean():.5f}')
+        print(f'\tMax: {inputs.mean():.5f}')
+
+        print('[Targets]')
+        print(f'\tMean: {targets.mean():.5f}')
+        print(f'\tMin: {targets.mean():.5f}')
+        print(f'\tMax: {targets.mean():.5f}')
+        print()
+
+        before_training = self.measure_error(
+            self.predict(self.test_x), self.test_x)
         print(f"Loss before training: {before_training:.5f}")
 
-        epochs_loss_change = []
+        self.epochs_loss_change = []
 
         for epoch in range(epochs):
             for batch, (t_x, t_y) in enumerate(zip(np.array_split(
-                    train_x, batch_size), np.array_split(train_y, batch_size))):
+                    self.train_x, batch_size), np.array_split(self.train_y, batch_size))):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward(epoch=epoch, batch=batch)
-            loss = self.measure_error(self.predict(test_x), test_y)
-            epochs_loss_change.append(loss)
-            print(f"Epoch {epoch}, Loss: {loss:.5f}", end="\r")
+            loss = self.measure_error(self.predict(self.test_x), self.test_x)
+            self.epochs_loss_change.append(loss)
+            print(f"Epoch {epoch}/{epochs}, Loss: {loss:.5f}", end="\r")
 
-        after_training = self.measure_error(test_x, test_y)
+        after_training = self.measure_error(
+            self.predict(self.test_x), self.test_x)
         print(f"Loss after training: {after_training:.5f}")
-        increase = (before_training - after_training) * 100 / before_training
+        self.increase = (before_training - after_training) * \
+            100 / before_training
         print(
-            f'Performance: {abs(increase):.3f}% {"better" if increase > 0 else "worse"}'
+            f'Performance: {abs(self.increase):.3f}% {"better" if self.increase > 0 else "worse"}'
         )
 
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-        ax1.plot(test_x, test_y)
-        ax1.set_title("Correct values for testing")
-        ax2.plot(test_x, self.predict(test_x))
-        ax2.set_title("Predicted values for testing")
+    def visualize(self):
+        fig, (ax1, ax2) = plt.subplots(1, 2)
 
-        ax3.plot(epochs_loss_change)
-        ax3.set_title(
-            f"Loss change across epochs (LR {self.optimizer.learning_rate}). Overall increase: {increase:.5f}%"
+        ax1.plot(self.epochs_loss_change)
+        ax1.set_title(
+            f"Loss change across epochs (LR {self.optimizer.learning_rate}). Overall increase: {self.increase:.5f}%"
         )
 
-        ax4.set_ymargin(2.5)
-        ax4.plot(test_x, test_y, c="g", label="correct")
-        predictions = self.predict(test_x)
-        ax4.plot(
-            test_x,
+        ax2.plot(self.train_x, self.train_y, c="g", label="correct")
+        predictions = self.predict(self.train_x)
+        ax2.plot(
+            self.train_x,
             predictions,
             c="r",
             label="predicted",
             scalex=False,
             scaley=False)
-        ax4.set_title(
-            f"Comparison (Avg diff {abs(predictions.mean() - test_y.mean()):5f}, Loss {after_training:.5f})"
+        ax2.set_title(
+            f"Comparison (Avg diff {abs(predictions.mean() - self.test_y.mean()):5f}, Loss {self.after_training:.5f})"
         )
-        ax4.legend()
+        ax2.legend()
         plt.show()

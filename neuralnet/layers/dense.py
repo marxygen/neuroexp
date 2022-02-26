@@ -61,4 +61,6 @@ class Dense:
                 dvalues=dinputs,
                 next_layers=next_layers[1:],
                 optimizer=optimizer,
+                epoch=epoch,
+                batch=batch
             )

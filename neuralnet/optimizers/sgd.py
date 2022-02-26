@@ -36,13 +36,15 @@ class SGD:
     ) -> Tuple[np.array, np.array, np.array]:
         """Apply the optimizer on weights and biases or any other parameters specified"""
         # Apply LR decay if requested
-        learning_rate = self.learning_rate * 1 / \
-            (1 + kwargs.pop(self.decay_basis + "s",
-                            1) * self.lr_decay_rate) if self.lr_decay_rate else self.learning_rate
-
-        weight_momentums = kwargs.pop('weight_momentums')
-        weight_updates = self.momentum * weight_momentums - \
-            (self.learning_rate * dweights).T
+        # learning_rate = self.learning_rate * 1 / \
+        #     (1 + kwargs.pop(self.decay_basis + "s",
+        #                     1) * self.lr_decay_rate) if self.lr_decay_rate else self.learning_rate
+        #
+        # weight_momentums = kwargs.pop('weight_momentums')
+        # weight_updates = self.momentum * weight_momentums - \
+        #     (self.learning_rate * dweights).T
+        learning_rate = self.learning_rate
+        weight_updates = (self.learning_rate * dweights).T
 
         weights -= weight_updates
         biases -= (learning_rate * dbiases).T
