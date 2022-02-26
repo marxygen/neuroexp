@@ -35,3 +35,5 @@ network.fit(inputs,
             targets,
             validation_split=0.10,
             epochs=100)
+
+network.visualize()

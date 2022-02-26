@@ -97,7 +97,7 @@ class NeuralNetwork:
         print()
 
         before_training = self.measure_error(
-            self.predict(self.test_x), self.test_x)
+            self.test_x, self.test_y)
         print(f"Loss before training: {before_training:.5f}")
 
         self.epochs_loss_change = []
@@ -107,12 +107,12 @@ class NeuralNetwork:
                     self.train_x, batch_size), np.array_split(self.train_y, batch_size))):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward(epoch=epoch, batch=batch)
-            loss = self.measure_error(self.predict(self.test_x), self.test_x)
+            loss = self.measure_error(self.test_x, self.test_y)
             self.epochs_loss_change.append(loss)
             print(f"Epoch {epoch}/{epochs}, Loss: {loss:.5f}", end="\r")
 
         after_training = self.measure_error(
-            self.predict(self.test_x), self.test_x)
+            self.test_x, self.test_y)
         print(f"Loss after training: {after_training:.5f}")
         self.increase = (before_training - after_training) * \
             100 / before_training
