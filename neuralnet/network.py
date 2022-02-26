@@ -96,9 +96,9 @@ class NeuralNetwork:
         print(f'\tMax: {targets.mean():.5f}')
         print()
 
-        before_training = self.measure_error(
+        self.before_training = self.measure_error(
             self.test_x, self.test_y)
-        print(f"Loss before training: {before_training:.5f}")
+        print(f"Loss before training: {self.before_training:.5f}")
 
         self.epochs_loss_change = []
 
@@ -111,11 +111,11 @@ class NeuralNetwork:
             self.epochs_loss_change.append(loss)
             print(f"Epoch {epoch}/{epochs}, Loss: {loss:.5f}", end="\r")
 
-        after_training = self.measure_error(
+        self.after_training = self.measure_error(
             self.test_x, self.test_y)
-        print(f"Loss after training: {after_training:.5f}")
-        self.increase = (before_training - after_training) * \
-            100 / before_training
+        print(f"Loss after training: {self.after_training:.5f}")
+        self.increase = (self.before_training - self.after_training) * \
+            100 / self.before_training
         print(
             f'Performance: {abs(self.increase):.3f}% {"better" if self.increase > 0 else "worse"}'
         )
