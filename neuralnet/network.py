@@ -34,7 +34,7 @@ class NeuralNetwork:
         """Validate predicted against targets"""
         loss = self.loss(predictions, targets)
         if verbose:
-            print(f"Loss: {loss:.5f}")
+            print(f"Loss: {loss.mean():.5f}")
         return loss
 
     def forward(self, inputs, targets, verbose=True):
@@ -45,7 +45,7 @@ class NeuralNetwork:
         loss = self.validate(self.values, targets, verbose)
 
         if verbose:
-            print(f"Loss: {loss:.5f}")
+            print(f"Loss: {loss.mean():.5f}")
 
     def backward(self, epoch=None, batch=None):
         """Perform backward pass"""
@@ -53,7 +53,8 @@ class NeuralNetwork:
         # So, the dimensions of the loss_deriv must be neurons x samples
         loss_deriv = self.loss(
             self.values, self.targets, deriv=True
-        ).T  # neurons x samples
+        ).T.astype(np.longfloat)  # neurons x samples
+
         self.layers[-1].backward(
             dvalues=loss_deriv,
             next_layers=self.layers[:-1][::-1],
@@ -78,6 +79,9 @@ class NeuralNetwork:
             batch_size=1000):
         """Display report based on performance of the network"""
 
+        inputs = inputs.astype(np.longfloat)
+        targets = targets.astype(np.longfloat)
+
         training_count = int(len(inputs) * (1 - validation_split))
         self.train_x = inputs[:training_count]
         self.train_y = targets[:training_count]
@@ -87,13 +91,13 @@ class NeuralNetwork:
 
         print('[Inputs]')
         print(f'\tMean: {inputs.mean():.5f}')
-        print(f'\tMin: {inputs.mean():.5f}')
-        print(f'\tMax: {inputs.mean():.5f}')
+        print(f'\tMin: {inputs.min():.5f}')
+        print(f'\tMax: {inputs.max():.5f}')
 
         print('[Targets]')
         print(f'\tMean: {targets.mean():.5f}')
-        print(f'\tMin: {targets.mean():.5f}')
-        print(f'\tMax: {targets.mean():.5f}')
+        print(f'\tMin: {targets.min():.5f}')
+        print(f'\tMax: {targets.max():.5f}')
         print()
 
         self.before_training = self.measure_error(
@@ -101,24 +105,32 @@ class NeuralNetwork:
         print(f"Loss before training: {self.before_training:.5f}")
 
         self.epochs_loss_change = []
+        prev_loss = 0
 
         for epoch in range(epochs):
+
             for batch, (t_x, t_y) in enumerate(zip(np.array_split(
                     self.train_x, batch_size), np.array_split(self.train_y, batch_size))):
                 self.forward(t_x, t_y, verbose=False)
                 self.backward(epoch=epoch, batch=batch)
+
             loss = self.measure_error(self.test_x, self.test_y)
             self.epochs_loss_change.append(loss)
-            print(f"Epoch {epoch}/{epochs}, Loss: {loss:.5f}", end="\r")
+            print(
+                f"Epoch {epoch}/{epochs}, Loss: {loss:.5f} {f'({((prev_loss - loss) * 100 / prev_loss):.3f}% rel. change)' if prev_loss != 0 else ''}",
+                end="\r")
+            prev_loss = loss
 
         self.after_training = self.measure_error(
             self.test_x, self.test_y)
         print(f"Loss after training: {self.after_training:.5f}")
         self.increase = (self.before_training - self.after_training) * \
-            100 / self.before_training
+                        100 / self.before_training
         print(
             f'Performance: {abs(self.increase):.3f}% {"better" if self.increase > 0 else "worse"}'
         )
+
+        print(f'Average prediction: {self.predict(self.test_x).mean():.5f}')
 
     def visualize(self):
         fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -130,13 +142,12 @@ class NeuralNetwork:
 
         ax2.plot(self.train_x, self.train_y, c="g", label="correct")
         predictions = self.predict(self.train_x)
+        print(predictions)
         ax2.plot(
             self.train_x,
             predictions,
             c="r",
-            label="predicted",
-            scalex=False,
-            scaley=False)
+            label="predicted")
         ax2.set_title(
             f"Comparison (Avg diff {abs(predictions.mean() - self.test_y.mean()):5f}, Loss {self.after_training:.5f})"
         )

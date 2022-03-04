@@ -13,9 +13,9 @@ class Dense:
         self.outputs = None
         self.neurons_num = neurons
         self.inputs_num = inputs
-        self.weights = np.random.randn(inputs, neurons)
-        self.biases = np.random.randn(1, neurons)
-        self.weight_momentums = np.zeros((inputs, neurons))
+        self.weights = np.random.randn(inputs, neurons).astype('float64')
+        self.biases = np.random.randn(1, neurons).astype('float64')
+        self.weight_momentums = np.zeros((inputs, neurons)).astype('float64')
         self.activation = (
             activation
             if callable(activation)
@@ -25,7 +25,7 @@ class Dense:
     def forward(self, inputs) -> np.array:
         """Perform forward pass"""
         self.inputs = inputs
-        self.values = inputs @ self.weights + self.biases
+        self.values = np.dot(inputs, self.weights) + self.biases
         self.outputs = self.activation(x=self.values)
         return self.outputs
 
@@ -40,8 +40,8 @@ class Dense:
         # We received dvalues - its dimensions are neurons x samples
         # Now we have to calculate the derivative of activation function
         # Its dimensions are neurons x samples
-        dact = self.activation(x=self.values, deriv=True).T
-        dact = dvalues * dact
+        dact = self.activation(x=self.values, deriv=True).T.astype(np.longfloat)
+        dact = np.multiply(dvalues, dact)
 
         # How much does each input affect the output of the neuron
         # This will be sent to the next layer

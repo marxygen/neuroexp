@@ -2,38 +2,36 @@
 import numpy as np
 from network import NeuralNetwork
 from layers.dense import Dense
-from activations import sigmoid, relu
-from losses import l2loss
 from optimizers import SGD
+from scalers.minmax import min_max_scale
 
 
 def f(x):
-    return 3*np.square(x) - 5
+    return 3*(x**2) - 5
 
 
-inputs = np.array(np.linspace(-1000, 1000, 2000))
+inputs = np.array(np.linspace(-1000, 1000, 10000))
 inputs = inputs.reshape(len(inputs), 1)
 targets = f(inputs)
 
-max_scale = np.maximum(np.amax(inputs), np.amax(targets))
-
-inputs /= max_scale
-targets /= targets
+inputs = min_max_scale(inputs)
+targets = min_max_scale(targets)
 
 network = NeuralNetwork(
     layers=[
-        Dense(neurons=1, inputs=1, activation=sigmoid),
-        Dense(neurons=4, inputs=1, activation=sigmoid),
-        Dense(neurons=4, inputs=4, activation=sigmoid),
-        Dense(neurons=1, inputs=4, activation=sigmoid)
+        Dense(neurons=1, inputs=1, activation='sigmoid'),
+        Dense(neurons=200, inputs=1, activation='sigmoid'),
+        Dense(neurons=200, inputs=200, activation='sigmoid'),
+        Dense(neurons=200, inputs=200, activation='sigmoid'),
+        Dense(neurons=1, inputs=200, activation='sigmoid')
     ],
-    loss=l2loss,
-    optimizer=SGD(learning_rate=0.001, lr_decay_rate=0.05, decay_basis='epoch')
+    loss='l1loss',
+    optimizer=SGD(learning_rate=0.1, lr_decay_rate=0.001, decay_basis='epoch', momentum=0.1)
 )
 
 network.fit(inputs,
             targets,
             validation_split=0.10,
-            epochs=100)
+            epochs=10)
 
 network.visualize()
